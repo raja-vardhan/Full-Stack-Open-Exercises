@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
+import Notification from './components/Notification';
 import personService from './services/persons'
+import './index.css'
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filterText, setFilterText] = useState('');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     personService
@@ -30,6 +33,12 @@ const App = () => {
             setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson));
             setNewName('');
             setNewNumber('');
+            setNotification({message: `Updated the number of ${returnedPerson.name} to ${returnedPerson.number}`, type: 'success'});
+            setTimeout(() => setNotification(null), 5000);
+          })
+          .catch(error => {
+            setNotification({message: `Information of ${updatedPerson.name} has already been removed from the server`, type: 'error'});
+            setTimeout(() => setNotification(null), 5000);
           })
       }
       return;
@@ -43,6 +52,8 @@ const App = () => {
         setPersons(persons.concat(returnedPerson));
         setNewName('');
         setNewNumber('');
+        setNotification({message: `Added ${returnedPerson.name}`, type: 'success'});
+        setTimeout(() => setNotification(null), 5000);
       })
   };
 
@@ -56,6 +67,8 @@ const App = () => {
       .then(response => {
         const updatedPersons = persons.filter(person => person.id !== id);
         setPersons(updatedPersons);
+        setNotification({message: `Deleted ${name} successfully`, type: 'error'});
+        setTimeout(() => setNotification(null), 5000);
       });
   };
 
@@ -68,6 +81,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification notification={notification}/>
 
       <Filter filterText={filterText} handleFilterChange={handleFilterChange}/>
 
